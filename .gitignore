@@ -217,3 +217,11 @@ __marimo__/
 
 # Cache
 **/data_cache/
+
+# GWM
+.history/
+AGENTS.md
+*plan*.md
+*.jsonl
+*.ipynb
+.DS_Store
