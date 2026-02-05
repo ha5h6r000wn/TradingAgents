@@ -3,7 +3,7 @@ import os
 DEFAULT_CONFIG = {
     "project_dir": os.path.abspath(os.path.join(os.path.dirname(__file__), ".")),
     "results_dir": os.getenv("TRADINGAGENTS_RESULTS_DIR", "./results"),
-    "data_dir": "/Users/yluo/Documents/Code/ScAI/FR1-data",
+    "data_dir": "/Users/hongkai98/Gf/py_projects/data/trading_agents_local_csv",
     "data_cache_dir": os.path.join(
         os.path.abspath(os.path.join(os.path.dirname(__file__), ".")),
         "dataflows/data_cache",
@@ -20,10 +20,10 @@ DEFAULT_CONFIG = {
     # Data vendor configuration
     # Category-level configuration (default for all tools in category)
     "data_vendors": {
-        "core_stock_apis": "yfinance",       # Options: yfinance, alpha_vantage, local
-        "technical_indicators": "yfinance",  # Options: yfinance, alpha_vantage, local
-        "fundamental_data": "alpha_vantage", # Options: openai, alpha_vantage, local
-        "news_data": "alpha_vantage",        # Options: openai, alpha_vantage, google, local
+        "core_stock_apis": "local",  # Options: yfinance, alpha_vantage, local
+        "technical_indicators": "local",  # Options: yfinance, alpha_vantage, local
+        "fundamental_data": "alpha_vantage",  # Options: openai, alpha_vantage, local
+        "news_data": "alpha_vantage",  # Options: openai, alpha_vantage, google, local
     },
     # Tool-level configuration (takes precedence over category-level)
     "tool_vendors": {
