@@ -1,21 +1,19 @@
+import os
+from typing import Annotated
+
 import pandas as pd
 import yfinance as yf
 from stockstats import wrap
-from typing import Annotated
-import os
-from .config import get_config, DATA_DIR
+
+from .config import DATA_DIR, get_config
 
 
 class StockstatsUtils:
     @staticmethod
     def get_stock_stats(
         symbol: Annotated[str, "ticker symbol for the company"],
-        indicator: Annotated[
-            str, "quantitative indicators based off of the stock data for the company"
-        ],
-        curr_date: Annotated[
-            str, "curr date for retrieving stock price data, YYYY-mm-dd"
-        ],
+        indicator: Annotated[str, "quantitative indicators based off of the stock data for the company"],
+        curr_date: Annotated[str, "curr date for retrieving stock price data, YYYY-mm-dd"],
     ):
         # Get config and set up data directory path
         config = get_config()
@@ -29,7 +27,7 @@ class StockstatsUtils:
                 data = pd.read_csv(
                     os.path.join(
                         DATA_DIR,
-                        f"{symbol}-YFin-data-2015-01-01-2025-03-25.csv",
+                        f"market_data/price_data/{symbol}-YFin-data-2015-01-01-2025-12-31.csv",
                     )
                 )
                 df = wrap(data)

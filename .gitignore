@@ -12,3 +12,5 @@ eval_data/
 
 .history/
 *.ipynb
+*_codex.md
+*_ag.md

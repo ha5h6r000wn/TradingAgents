@@ -12,6 +12,7 @@ config = DEFAULT_CONFIG.copy()
 config["backend_url"] = "http://llm.smart-zone-dev.gf.com.cn/api/oai/v1"
 config["deep_think_llm"] = "internal-qwen3-235b-a22b-think-awq"  # Use a different model
 config["quick_think_llm"] = "internal-qwen3-235b-a22b-think-awq"  # Use a different model
+config["embedding_model"] = "internal-bge-m3"
 config["max_debate_rounds"] = 1  # Increase debate rounds
 
 # Configure data vendors (default uses yfinance and alpha_vantage)
