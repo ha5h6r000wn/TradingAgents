@@ -16,3 +16,4 @@ eval_data/
 *_ag.md
 AGENTS.md
 *.jsonl
+*.log

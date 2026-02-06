@@ -19,15 +19,15 @@ config["max_debate_rounds"] = 1  # Increase debate rounds
 config["data_vendors"] = {
     "core_stock_apis": "local",  # Options: yfinance, alpha_vantage, local
     "technical_indicators": "local",  # Options: yfinance, alpha_vantage, local
-    "fundamental_data": "alpha_vantage",  # Options: openai, alpha_vantage, local
-    "news_data": "alpha_vantage",  # Options: openai, alpha_vantage, google, local
+    "fundamental_data": "local",  # Options: openai, alpha_vantage, local
+    "news_data": "local",  # Options: openai, alpha_vantage, google, local
 }
 
 # Initialize with custom config
 ta = TradingAgentsGraph(debug=True, config=config)
 
 # forward propagate
-_, decision = ta.propagate("NVDA", "2024-05-10")
+_, decision = ta.propagate("NVDA", "2025-12-01")
 print(decision)
 
 # Memorize mistakes and reflect

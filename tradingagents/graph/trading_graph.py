@@ -1,45 +1,36 @@
 # TradingAgents/graph/trading_graph.py
 
+import json
 import os
 from pathlib import Path
-import json
-from datetime import date
-from typing import Dict, Any, Tuple, List, Optional
+from typing import Any, Dict
 
-from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
-
+from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import ToolNode
 
 from tradingagents.agents import *
-from tradingagents.default_config import DEFAULT_CONFIG
-from tradingagents.agents.utils.memory import FinancialSituationMemory
-from tradingagents.agents.utils.agent_states import (
-    AgentState,
-    InvestDebateState,
-    RiskDebateState,
-)
-from tradingagents.dataflows.config import set_config
 
 # Import the new abstract tool methods from agent_utils
 from tradingagents.agents.utils.agent_utils import (
-    get_stock_data,
-    get_indicators,
-    get_fundamentals,
     get_balance_sheet,
     get_cashflow,
     get_income_statement,
-    get_news,
+    get_indicators,
     get_insider_sentiment,
     get_insider_transactions,
-    get_global_news
+    get_news,
+    get_stock_data,
 )
+from tradingagents.agents.utils.memory import FinancialSituationMemory
+from tradingagents.dataflows.config import set_config
+from tradingagents.default_config import DEFAULT_CONFIG
 
 from .conditional_logic import ConditionalLogic
-from .setup import GraphSetup
 from .propagation import Propagator
 from .reflection import Reflector
+from .setup import GraphSetup
 from .signal_processing import SignalProcessor
 
 
@@ -72,18 +63,30 @@ class TradingAgentsGraph:
         )
 
         # Initialize LLMs
-        if self.config["llm_provider"].lower() == "openai" or self.config["llm_provider"] == "ollama" or self.config["llm_provider"] == "openrouter":
-            self.deep_thinking_llm = ChatOpenAI(model=self.config["deep_think_llm"], base_url=self.config["backend_url"])
-            self.quick_thinking_llm = ChatOpenAI(model=self.config["quick_think_llm"], base_url=self.config["backend_url"])
+        if (
+            self.config["llm_provider"].lower() == "openai"
+            or self.config["llm_provider"] == "ollama"
+            or self.config["llm_provider"] == "openrouter"
+        ):
+            self.deep_thinking_llm = ChatOpenAI(
+                model=self.config["deep_think_llm"], base_url=self.config["backend_url"]
+            )
+            self.quick_thinking_llm = ChatOpenAI(
+                model=self.config["quick_think_llm"], base_url=self.config["backend_url"]
+            )
         elif self.config["llm_provider"].lower() == "anthropic":
-            self.deep_thinking_llm = ChatAnthropic(model=self.config["deep_think_llm"], base_url=self.config["backend_url"])
-            self.quick_thinking_llm = ChatAnthropic(model=self.config["quick_think_llm"], base_url=self.config["backend_url"])
+            self.deep_thinking_llm = ChatAnthropic(
+                model=self.config["deep_think_llm"], base_url=self.config["backend_url"]
+            )
+            self.quick_thinking_llm = ChatAnthropic(
+                model=self.config["quick_think_llm"], base_url=self.config["backend_url"]
+            )
         elif self.config["llm_provider"].lower() == "google":
             self.deep_thinking_llm = ChatGoogleGenerativeAI(model=self.config["deep_think_llm"])
             self.quick_thinking_llm = ChatGoogleGenerativeAI(model=self.config["quick_think_llm"])
         else:
             raise ValueError(f"Unsupported LLM provider: {self.config['llm_provider']}")
-        
+
         # Initialize memories
         self.bull_memory = FinancialSituationMemory("bull_memory", self.config)
         self.bear_memory = FinancialSituationMemory("bear_memory", self.config)
@@ -141,7 +144,7 @@ class TradingAgentsGraph:
                 [
                     # News and insider information
                     get_news,
-                    get_global_news,
+                    # get_global_news,
                     get_insider_sentiment,
                     get_insider_transactions,
                 ]
@@ -149,7 +152,7 @@ class TradingAgentsGraph:
             "fundamentals": ToolNode(
                 [
                     # Fundamental analysis tools
-                    get_fundamentals,
+                    # get_fundamentals,
                     get_balance_sheet,
                     get_cashflow,
                     get_income_statement,
@@ -163,9 +166,7 @@ class TradingAgentsGraph:
         self.ticker = company_name
 
         # Initialize state
-        init_agent_state = self.propagator.create_initial_state(
-            company_name, trade_date
-        )
+        init_agent_state = self.propagator.create_initial_state(company_name, trade_date)
         args = self.propagator.get_graph_args()
 
         if self.debug:
@@ -205,12 +206,8 @@ class TradingAgentsGraph:
                 "bull_history": final_state["investment_debate_state"]["bull_history"],
                 "bear_history": final_state["investment_debate_state"]["bear_history"],
                 "history": final_state["investment_debate_state"]["history"],
-                "current_response": final_state["investment_debate_state"][
-                    "current_response"
-                ],
-                "judge_decision": final_state["investment_debate_state"][
-                    "judge_decision"
-                ],
+                "current_response": final_state["investment_debate_state"]["current_response"],
+                "judge_decision": final_state["investment_debate_state"]["judge_decision"],
             },
             "trader_investment_decision": final_state["trader_investment_plan"],
             "risk_debate_state": {
@@ -236,21 +233,11 @@ class TradingAgentsGraph:
 
     def reflect_and_remember(self, returns_losses):
         """Reflect on decisions and update memory based on returns."""
-        self.reflector.reflect_bull_researcher(
-            self.curr_state, returns_losses, self.bull_memory
-        )
-        self.reflector.reflect_bear_researcher(
-            self.curr_state, returns_losses, self.bear_memory
-        )
-        self.reflector.reflect_trader(
-            self.curr_state, returns_losses, self.trader_memory
-        )
-        self.reflector.reflect_invest_judge(
-            self.curr_state, returns_losses, self.invest_judge_memory
-        )
-        self.reflector.reflect_risk_manager(
-            self.curr_state, returns_losses, self.risk_manager_memory
-        )
+        self.reflector.reflect_bull_researcher(self.curr_state, returns_losses, self.bull_memory)
+        self.reflector.reflect_bear_researcher(self.curr_state, returns_losses, self.bear_memory)
+        self.reflector.reflect_trader(self.curr_state, returns_losses, self.trader_memory)
+        self.reflector.reflect_invest_judge(self.curr_state, returns_losses, self.invest_judge_memory)
+        self.reflector.reflect_risk_manager(self.curr_state, returns_losses, self.risk_manager_memory)
 
     def process_signal(self, full_signal):
         """Process a signal to extract the core decision."""

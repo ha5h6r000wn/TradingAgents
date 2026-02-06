@@ -1,65 +1,59 @@
-from typing import Annotated
-
 # Import from vendor-specific modules
-from .local import get_YFin_data, get_finnhub_news, get_finnhub_company_insider_sentiment, get_finnhub_company_insider_transactions, get_simfin_balance_sheet, get_simfin_cashflow, get_simfin_income_statements, get_reddit_global_news, get_reddit_company_news
-from .y_finance import get_YFin_data_online, get_stock_stats_indicators_window, get_balance_sheet as get_yfinance_balance_sheet, get_cashflow as get_yfinance_cashflow, get_income_statement as get_yfinance_income_statement, get_insider_transactions as get_yfinance_insider_transactions
-from .google import get_google_news
-from .openai import get_stock_news_openai, get_global_news_openai, get_fundamentals_openai
-from .alpha_vantage import (
-    get_stock as get_alpha_vantage_stock,
-    get_indicator as get_alpha_vantage_indicator,
-    get_fundamentals as get_alpha_vantage_fundamentals,
-    get_balance_sheet as get_alpha_vantage_balance_sheet,
-    get_cashflow as get_alpha_vantage_cashflow,
-    get_income_statement as get_alpha_vantage_income_statement,
-    get_insider_transactions as get_alpha_vantage_insider_transactions,
-    get_news as get_alpha_vantage_news
-)
+from .alpha_vantage import get_balance_sheet as get_alpha_vantage_balance_sheet
+from .alpha_vantage import get_cashflow as get_alpha_vantage_cashflow
+from .alpha_vantage import get_fundamentals as get_alpha_vantage_fundamentals
+from .alpha_vantage import get_income_statement as get_alpha_vantage_income_statement
+from .alpha_vantage import get_indicator as get_alpha_vantage_indicator
+from .alpha_vantage import get_insider_transactions as get_alpha_vantage_insider_transactions
+from .alpha_vantage import get_news as get_alpha_vantage_news
+from .alpha_vantage import get_stock as get_alpha_vantage_stock
 from .alpha_vantage_common import AlphaVantageRateLimitError
 
 # Configuration and routing logic
 from .config import get_config
+from .google import get_google_news
+from .local import (
+    get_finnhub_company_insider_sentiment,
+    get_finnhub_company_insider_transactions,
+    get_finnhub_news,
+    get_reddit_global_news,
+    get_simfin_balance_sheet,
+    get_simfin_cashflow,
+    get_simfin_income_statements,
+    get_YFin_data,
+)
+from .openai import get_fundamentals_openai, get_global_news_openai, get_stock_news_openai
+from .y_finance import get_balance_sheet as get_yfinance_balance_sheet
+from .y_finance import get_cashflow as get_yfinance_cashflow
+from .y_finance import get_income_statement as get_yfinance_income_statement
+from .y_finance import get_insider_transactions as get_yfinance_insider_transactions
+from .y_finance import get_stock_stats_indicators_window, get_YFin_data_online
 
 # Tools organized by category
 TOOLS_CATEGORIES = {
-    "core_stock_apis": {
-        "description": "OHLCV stock price data",
-        "tools": [
-            "get_stock_data"
-        ]
-    },
-    "technical_indicators": {
-        "description": "Technical analysis indicators",
-        "tools": [
-            "get_indicators"
-        ]
-    },
+    "core_stock_apis": {"description": "OHLCV stock price data", "tools": ["get_stock_data"]},
+    "technical_indicators": {"description": "Technical analysis indicators", "tools": ["get_indicators"]},
     "fundamental_data": {
         "description": "Company fundamentals",
         "tools": [
-            "get_fundamentals",
+            # "get_fundamentals",
             "get_balance_sheet",
             "get_cashflow",
-            "get_income_statement"
-        ]
+            "get_income_statement",
+        ],
     },
     "news_data": {
         "description": "News (public/insiders, original/processed)",
         "tools": [
             "get_news",
-            "get_global_news",
+            # "get_global_news",
             "get_insider_sentiment",
             "get_insider_transactions",
-        ]
-    }
+        ],
+    },
 }
 
-VENDOR_LIST = [
-    "local",
-    "yfinance",
-    "openai",
-    "google"
-]
+VENDOR_LIST = ["local", "yfinance", "openai", "google"]
 
 # Mapping of methods to their vendor-specific implementations
 VENDOR_METHODS = {
@@ -73,7 +67,7 @@ VENDOR_METHODS = {
     "get_indicators": {
         "alpha_vantage": get_alpha_vantage_indicator,
         "yfinance": get_stock_stats_indicators_window,
-        "local": get_stock_stats_indicators_window
+        "local": get_stock_stats_indicators_window,
     },
     # fundamental_data
     "get_fundamentals": {
@@ -100,15 +94,11 @@ VENDOR_METHODS = {
         "alpha_vantage": get_alpha_vantage_news,
         "openai": get_stock_news_openai,
         "google": get_google_news,
-        "local": [get_finnhub_news, get_reddit_company_news, get_google_news],
+        # "local": [get_finnhub_news, get_reddit_company_news, get_google_news],
+        "local": get_finnhub_news,
     },
-    "get_global_news": {
-        "openai": get_global_news_openai,
-        "local": get_reddit_global_news
-    },
-    "get_insider_sentiment": {
-        "local": get_finnhub_company_insider_sentiment
-    },
+    "get_global_news": {"openai": get_global_news_openai, "local": get_reddit_global_news},
+    "get_insider_sentiment": {"local": get_finnhub_company_insider_sentiment},
     "get_insider_transactions": {
         "alpha_vantage": get_alpha_vantage_insider_transactions,
         "yfinance": get_yfinance_insider_transactions,
@@ -116,12 +106,14 @@ VENDOR_METHODS = {
     },
 }
 
+
 def get_category_for_method(method: str) -> str:
     """Get the category that contains the specified method."""
     for category, info in TOOLS_CATEGORIES.items():
         if method in info["tools"]:
             return category
     raise ValueError(f"Method '{method}' not found in any category")
+
 
 def get_vendor(category: str, method: str = None) -> str:
     """Get the configured vendor for a data category or specific tool method.
@@ -138,20 +130,21 @@ def get_vendor(category: str, method: str = None) -> str:
     # Fall back to category-level configuration
     return config.get("data_vendors", {}).get(category, "default")
 
+
 def route_to_vendor(method: str, *args, **kwargs):
     """Route method calls to appropriate vendor implementation with fallback support."""
     category = get_category_for_method(method)
     vendor_config = get_vendor(category, method)
 
     # Handle comma-separated vendors
-    primary_vendors = [v.strip() for v in vendor_config.split(',')]
+    primary_vendors = [v.strip() for v in vendor_config.split(",")]
 
     if method not in VENDOR_METHODS:
         raise ValueError(f"Method '{method}' not supported")
 
     # Get all available vendors for this method for fallback
     all_available_vendors = list(VENDOR_METHODS[method].keys())
-    
+
     # Create fallback vendor list: primary vendors first, then remaining vendors as fallbacks
     fallback_vendors = primary_vendors.copy()
     for vendor in all_available_vendors:
@@ -202,10 +195,10 @@ def route_to_vendor(method: str, *args, **kwargs):
                 result = impl_func(*args, **kwargs)
                 vendor_results.append(result)
                 print(f"SUCCESS: {impl_func.__name__} from vendor '{vendor_name}' completed successfully")
-                    
+
             except AlphaVantageRateLimitError as e:
                 if vendor == "alpha_vantage":
-                    print(f"RATE_LIMIT: Alpha Vantage rate limit exceeded, falling back to next available vendor")
+                    print("RATE_LIMIT: Alpha Vantage rate limit exceeded, falling back to next available vendor")
                     print(f"DEBUG: Rate limit details: {e}")
                 # Continue to next vendor for fallback
                 continue
@@ -220,7 +213,7 @@ def route_to_vendor(method: str, *args, **kwargs):
             successful_vendor = vendor
             result_summary = f"Got {len(vendor_results)} result(s)"
             print(f"SUCCESS: Vendor '{vendor}' succeeded - {result_summary}")
-            
+
             # Stopping logic: Stop after first successful vendor for single-vendor configs
             # Multiple vendor configs (comma-separated) may want to collect from multiple sources
             if len(primary_vendors) == 1:
@@ -234,11 +227,13 @@ def route_to_vendor(method: str, *args, **kwargs):
         print(f"FAILURE: All {vendor_attempt_count} vendor attempts failed for method '{method}'")
         raise RuntimeError(f"All vendor implementations failed for method '{method}'")
     else:
-        print(f"FINAL: Method '{method}' completed with {len(results)} result(s) from {vendor_attempt_count} vendor attempt(s)")
+        print(
+            f"FINAL: Method '{method}' completed with {len(results)} result(s) from {vendor_attempt_count} vendor attempt(s)"
+        )
 
     # Return single result if only one, otherwise concatenate as string
     if len(results) == 1:
         return results[0]
     else:
         # Convert all results to strings and concatenate
-        return '\n'.join(str(result) for result in results)
+        return "\n".join(str(result) for result in results)
