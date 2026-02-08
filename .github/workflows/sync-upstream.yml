@@ -41,11 +41,14 @@ jobs:
           branch: bot/sync-upstream
           delete-branch: true
           base: main
-          title: "Sync upstream/main -> main"
+          title: "[auto-sync] Sync upstream/main -> main"
           body: |
-            Automated PR created by GitHub Actions to sync upstream changes into this fork.
+            This PR was automatically created to sync upstream changes into this fork.
+      
+            - Source: upstream/main
+            - Target: main
+            - Created by GitHub Actions
           commit-message: "Sync upstream/main"
           labels: |
             upstream-sync
           assignees: ha5h6r000wn
-
