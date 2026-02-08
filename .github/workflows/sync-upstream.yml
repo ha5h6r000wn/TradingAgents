@@ -1,0 +1,49 @@
+name: Sync upstream
+
+on:
+  schedule:
+    # 每天多伦多时间大约早上（UTC 时间自己可调）
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout fork main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Add upstream remote & fetch
+        run: |
+          git remote add upstream https://github.com/TauricResearch/TradingAgents.git
+          git fetch upstream
+          git fetch origin
+
+      - name: Check if origin/main is behind upstream/main
+        id: check
+        run: |
+          BEHIND=$(git rev-list --count origin/main..upstream/main)
+          echo "behind=$BEHIND" >> $GITHUB_OUTPUT
+          echo "Behind count: $BEHIND"
+
+      - name: Create PR to sync upstream -> main
+        if: steps.check.outputs.behind != '0'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: bot/sync-upstream
+          delete-branch: true
+          base: main
+          title: "Sync upstream/main -> main"
+          body: |
+            Automated PR created by GitHub Actions to sync upstream changes into this fork.
+          commit-message: "Sync upstream/main"
+          labels: |
+            upstream-sync
