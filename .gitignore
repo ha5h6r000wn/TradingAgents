@@ -223,5 +223,6 @@ __marimo__/
 AGENTS.md
 *plan*.md
 *.jsonl
+*.json
 *.ipynb
 .DS_Store
