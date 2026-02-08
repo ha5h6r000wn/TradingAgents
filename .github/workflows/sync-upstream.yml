@@ -47,3 +47,5 @@ jobs:
           commit-message: "Sync upstream/main"
           labels: |
             upstream-sync
+          assignees: ha5h6r000wn
+
