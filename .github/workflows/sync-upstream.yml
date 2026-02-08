@@ -2,7 +2,6 @@ name: Sync upstream
 
 on:
   schedule:
-    # 每天多伦多时间大约早上（UTC 时间自己可调）
     - cron: "0 13 * * *"
   workflow_dispatch:
 
@@ -13,7 +12,6 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout fork main
         uses: actions/checkout@v4
@@ -21,11 +19,15 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Add upstream remote & fetch
+      - name: Add/update upstream remote & fetch
         run: |
-          git remote add upstream https://github.com/TauricResearch/TradingAgents.git
-          git fetch upstream
-          git fetch origin
+          if git remote get-url upstream > /dev/null 2>&1; then
+            git remote set-url upstream https://github.com/TauricResearch/TradingAgents.git
+          else
+            git remote add upstream https://github.com/TauricResearch/TradingAgents.git
+          fi
+          git fetch --prune upstream
+          git fetch --prune origin
 
       - name: Check if origin/main is behind upstream/main
         id: check
@@ -44,7 +46,7 @@ jobs:
           title: "[auto-sync] Sync upstream/main -> main"
           body: |
             This PR was automatically created to sync upstream changes into this fork.
-      
+
             - Source: upstream/main
             - Target: main
             - Created by GitHub Actions
